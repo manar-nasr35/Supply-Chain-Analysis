@@ -1,6 +1,6 @@
-# Supply Chain Performance Analysis for DataCo
-
 <div align="center">
+
+# Supply Chain Performance Analysis for DataCo
 
 **Power BI • Excel • Python • SQL • Tableau**
 
@@ -63,7 +63,7 @@ The project analyzes approximately **180,000 order-item records** from **2015 to
 
 ---
 
-## Key Performance Indicators (KPIs)
+## (KPIs)
 
 The dashboard tracks the following key business KPIs:
 
