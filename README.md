@@ -8,7 +8,7 @@
 
 This project focuses on analyzing **DataCo**, a global company that sells sports products across five markets: Europe, Latin America, Pacific Asia, USCA, and Africa.
 
-The project analyzes approximately **180,000 order-item records** from 2015 to 2018, covering sales, profit, shipping, customers, and payment methods.
+The project analyzes approximately **180,000 order-item records** from **2015 to 2018**, covering sales, profit, shipping, customers, and payment methods.
 
 **Business Challenges:**
 - High rates of late deliveries.
