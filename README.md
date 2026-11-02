@@ -1,10 +1,14 @@
 # Supply Chain Performance Analysis for DataCo
 
+<div align="center">
+
 **Power BI • Excel • Python • SQL • Tableau**
 
-## Project Description
+</div>
 
-### Project Description
+---
+
+## Project Description
 
 This project focuses on analyzing **DataCo**, a global company that sells sports products across five markets: Europe, Latin America, Pacific Asia, USCA, and Africa.
 
@@ -16,6 +20,8 @@ The project analyzes approximately **180,000 order-item records** from **2015 to
 - Ineffective discount strategies.
 - Heavy dependence on a small number of top-selling products.
 
+---
+
 ## Team Members
 
 1. **Manar Nasr Ibrahim** — Team Leader
@@ -25,18 +31,22 @@ The project analyzes approximately **180,000 order-item records** from **2015 to
 5. Muhammad Yahya Mohammed Abdelrazzaq
 6. Martin Milad Gamil Nagib
 
+---
+
 ## Work Plan
 
 | Week | Phase | Tasks | Deliverables |
 |---|---|---|---|
-| 1 | Data cleaning & preprocessing | Clean and transform the data in Power BI | Cleaned dataset + documented preprocessing steps |
-| 2 | Analysis questions | Define all business questions the data can answer | List of analysis questions |
-| 3 | Dashboard | Build the data model, measures and Power BI dashboard (+ Excel dashboard) | Power BI dashboard |
-| 4 | Final presentation | Write the report and prepare the presentation | Final report + presentation |
+| 1 | Data Cleaning & Preprocessing | Clean and transform the data in Power BI | Cleaned dataset + documented preprocessing steps |
+| 2 | Analysis Questions | Define business questions that can be answered using the data | List of analysis questions |
+| 3 | Dashboard Development | Build the data model, measures, and Power BI dashboard, along with an Excel dashboard | Power BI & Excel dashboards |
+| 4 | Final Presentation | Prepare the final report and presentation | Final report + presentation |
+
+---
 
 ## 🛠️ Tools & Team Responsibilities
 
-### 1.Excel
+### 1. Excel
 
 | Task | Responsible Team Members |
 |---|---|
@@ -46,10 +56,12 @@ The project analyzes approximately **180,000 order-item records** from **2015 to
 
 | Task | Responsible Team Members |
 |---|---|
-| Data Cleaning & Transformation | Manar Nasr, Nourhan Mohamed , Ola Mohamed |
+| Data Cleaning & Transformation | Manar Nasr, Nourhan Mohamed, Ola Mohamed |
 | Data Preparation | Mohamed Yehia, Martin Milad |
 | Data Modeling | Shahd Mohammed |
-| Data Visualization | All |
+| Data Visualization | All Team Members |
+
+---
 
 ## Key Performance Indicators (KPIs)
 
@@ -62,8 +74,11 @@ The dashboard tracks the following key business KPIs:
 - Canceled and Fraudulent Orders
 - Top Products Sales Contribution
 - Repeat Customer Rate
- 
-## Instructor Name
+
+---
+
+## Instructor
+
 **Eng. Fatimah Ehab Farouk**
 
 ## Project Links
