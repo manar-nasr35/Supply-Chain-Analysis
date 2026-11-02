@@ -59,7 +59,7 @@ The project analyzes approximately **180,000 order-item records** from **2015 to
 | Data Cleaning & Transformation | Manar Nasr, Nourhan Mohamed, Ola Mohamed |
 | Data Preparation | Mohamed Yehia, Martin Milad |
 | Data Modeling | Shahd Mohammed |
-| Data Visualization | All Team Members |
+| Data Visualization | All |
 
 ---
 
