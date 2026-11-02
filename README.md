@@ -74,11 +74,8 @@ The dashboard tracks the following key business KPIs:
 - Canceled and Fraudulent Orders
 - Top Products Sales Contribution
 - Repeat Customer Rate
-
 ---
-
 ## Instructor
-
 **Eng. Fatimah Ehab Farouk**
 
 ## Project Links
