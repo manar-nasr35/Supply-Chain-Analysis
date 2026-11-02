@@ -1,10 +1,20 @@
-# Supply Chain Analysis
+# Supply Chain Performance Analysis for DataCo
 
 **Power BI • Excel • Python • SQL • Tableau**
 
 ## Project Description
 
-This project focuses on analyzing **DataCo's** global supply chain data using BI tools, focusing on data cleaning, preprocessing, and interactive dashboard development to support data-driven decision-making. The dataset contains approximately **180,000** sales transactions from **2015 to 2017**.
+### Project Description
+
+This project focuses on analyzing **DataCo**, a global company that sells sports products across five markets: Europe, Latin America, Pacific Asia, USCA, and Africa.
+
+The project analyzes approximately **180,000 order-item records** from 2015 to 2018, covering sales, profit, shipping, customers, and payment methods.
+
+**Business Challenges:**
+- High rates of late deliveries.
+- Loss-making orders and low profitability.
+- Ineffective discount strategies.
+- Heavy dependence on a small number of top-selling products.
 
 ## Team Members
 
@@ -15,9 +25,24 @@ This project focuses on analyzing **DataCo's** global supply chain data using BI
 5. Muhammad Yahya Mohammed Abdelrazzaq
 6. Martin Milad Gamil Nagib
 
+## Work Plan
+
+| Week | Phase | Tasks | Deliverables |
+|---|---|---|---|
+| 1 | Data cleaning & preprocessing | Clean and transform the data in Power BI | Cleaned dataset + documented preprocessing steps |
+| 2 | Analysis questions | Define all business questions the data can answer | List of analysis questions |
+| 3 | Dashboard | Build the data model, measures and Power BI dashboard (+ Excel dashboard) | Power BI dashboard |
+| 4 | Final presentation | Write the report and prepare the presentation | Final report + presentation |
+
 ## 🛠️ Tools & Team Responsibilities
 
-### 1. Power BI
+### 1.Excel
+
+| Task | Responsible Team Members |
+|---|---|
+| Excel Dashboard | Manar Nasr, Nourhan Mohamed, Martin Milad |
+
+2. Power BI
 
 | Task | Responsible Team Members |
 |---|---|
@@ -26,12 +51,18 @@ This project focuses on analyzing **DataCo's** global supply chain data using BI
 | Data Modeling | Shahd Mohammed |
 | Data Visualization | All |
 
-### 2. Excel
+## Key Performance Indicators (KPIs)
 
-| Task | Responsible Team Members |
-|---|---|
-| Excel Dashboard | Manar Nasr, Nourhan Mohamed, Martin Milad |
+The dashboard tracks the following key business KPIs:
 
+- Late Delivery Rate
+- Loss-Making Items
+- Profit Margin
+- Discount Performance
+- Canceled and Fraudulent Orders
+- Top Products Sales Contribution
+- Repeat Customer Rate
+ 
 ## Instructor Name
 **Eng. Fatimah Ehab Farouk**
 
