@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚚 Supply Chain Performance Analysis for DataCo 
+#  Supply Chain Performance Analysis for DataCo 🚚 
 
 **Excel • Power BI • Python • SQL • Tableau**
 
