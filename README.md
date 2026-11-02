@@ -42,7 +42,7 @@ The project analyzes approximately **180,000 order-item records** from 2015 to 2
 |---|---|
 | Excel Dashboard | Manar Nasr, Nourhan Mohamed, Martin Milad |
 
-2. Power BI
+### 2. Power BI
 
 | Task | Responsible Team Members |
 |---|---|
