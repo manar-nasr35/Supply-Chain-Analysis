@@ -2,7 +2,7 @@
 
 # Supply Chain Performance Analysis for DataCo
 
-**Power BI • Excel • Python • SQL • Tableau**
+**Excel • Power BI • Python • SQL • Tableau**
 
 </div>
 
