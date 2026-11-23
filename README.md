@@ -63,7 +63,7 @@ The project focuses on addressing five key business challenges:
 
 | Tool | Responsibilities |
 |---|---|
-| Excel | Data Cleaning, Calculations, Pivot Tables, and Dashboard Development |
+| Microsoft Excel | Data Cleaning, Calculations, Pivot Tables, and Dashboard Development |
 | Power BI | Data Preparation, Transformation, Modeling, DAX Measures, Calculated Columns, and Interactive Dashboards |
 | SQL | Database Design, Data Querying, Analytical Queries, and Business Case Investigation |
 | Tableau | Data Visualization and Dashboard Development |
