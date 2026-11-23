@@ -1,28 +1,56 @@
 <div align="center">
 
-#  Supply Chain Performance Analysis for DataCo 🚚 
+# 🚚 DataCo Supply Chain Performance Analysis
 
-**Excel • Power BI • Python • SQL • Tableau**
+**Excel | SQL | Power BI | Tableau**
 
 </div>
 
----
+## 📌 Project Overview
 
-## Project Description
+This project focuses on analyzing DataCo, a global sports products company operating across five markets: Europe, Latin America, Pacific Asia, USCA, and Africa.
 
-This project focuses on analyzing **DataCo**, a global company that sells sports products across five markets: Europe, Latin America, Pacific Asia, USCA, and Africa.
+Using approximately 180,000 order-item records from 2015 to 2018, the project aims to evaluate supply chain performance, identify operational inefficiencies, and uncover opportunities to improve profitability and customer experience.
 
-The project analyzes approximately **180,000 order-item records** from **2015 to 2018**, covering sales, profit, shipping, customers, and payment methods.
+## 🎯 Business Challenges
 
-**Business Challenges:**
-- High rates of late deliveries.
-- Loss-making orders and low profitability.
-- Ineffective discount strategies.
-- Heavy dependence on a small number of top-selling products.
+The project focuses on addressing five key business challenges:
 
----
+- **Delivery Performance:** High late delivery rates and shipping inefficiencies affecting order fulfillment.
+- **Profitability:** Loss-making orders and low profit margins affecting overall financial performance.
+- **Discount Strategy:** Ineffective discount practices and their impact on sales profitability.
+- **Product Performance:** High sales concentration among a limited number of top-performing products, creating product dependency.
+- **Customer & Order Performance:** Understanding customer purchasing behavior, repeat purchase patterns, and the impact of canceled and fraudulent orders.
 
-## Team Members
+## 🛠️ Tools & Technologies
+
+| Tool | Purpose |
+|---|---|
+| Microsoft Excel | Data Cleaning, Calculations, Pivot Tables, and Dashboard Development |
+| SQL | Database Design, Data Querying, and Analysis |
+| Power BI | Data Transformation, Data Modeling, DAX Measures, Calculated Columns, and Interactive Dashboard Development |
+| Tableau | Data Visualization and Interactive Dashboard Development |
+
+## 📊 Key Performance Indicators (KPIs)
+
+1. Late Delivery Rate
+2. Loss-Making Items
+3. Profit Margin
+4. Discount Performance
+5. Canceled and Fraudulent Orders
+6. Top Products Sales Contribution
+7. Repeat Customer Rate
+
+## ⚙️ Project Workflow
+
+1. **Data Understanding:** Exploring the dataset, identifying key fields, and understanding business requirements.
+2. **Data Cleaning:** Cleaning the original dataset and preparing a consistent dataset for use across all project tools.
+3. **Data Analysis:** Investigating business questions, identifying trends, and evaluating supply chain performance.
+4. **Data Transformation & Modeling:** Transforming data, organizing relationships, and preparing analytical models, particularly in Power BI.
+5. **Dashboard Development:** Building analytical dashboards and visual reports using Excel, Power BI, and Tableau.
+6. **Insights & Recommendations:** Translating analytical findings into actionable business recommendations.
+
+## 👥 Team Members
 
 1. **Manar Nasr Ibrahim** — Team Leader
 2. Nourhan Mohamed Mahmoud Abdel-Tawab
@@ -31,55 +59,29 @@ The project analyzes approximately **180,000 order-item records** from **2015 to
 5. Muhammad Yahya Mohammed Abdelrazzaq
 6. Martin Milad Gamil Nagib
 
----
+## 👩‍💻 Team Responsibilities
 
-## Work Plan
-
-| Week | Phase | Tasks | Deliverables |
-|---|---|---|---|
-| 1 | Data Cleaning & Preprocessing | Clean and transform the data in Power BI | Cleaned dataset + documented preprocessing steps |
-| 2 | Analysis Questions | Define business questions that can be answered using the data | List of analysis questions |
-| 3 | Dashboard Development | Build the data model, measures, and Power BI dashboard, along with an Excel dashboard | Power BI & Excel dashboards |
-| 4 | Final Presentation | Prepare the final report and presentation | Final report + presentation |
-
----
-
-## 🛠️ Tools & Team Responsibilities
-
-### 1. Excel
-
-| Task | Responsible Team Members |
+| Tool | Responsibilities |
 |---|---|
-| Excel Dashboard | Manar Nasr, Nourhan Mohamed, Martin Milad |
+| Excel | Data Cleaning, Calculations, Pivot Tables, and Dashboard Development |
+| Power BI | Data Preparation, Transformation, Modeling, DAX Measures, Calculated Columns, and Interactive Dashboards |
+| SQL | Database Design, Data Querying, Analytical Queries, and Business Case Investigation |
+| Tableau | Data Visualization and Dashboard Development |
 
-### 2. Power BI
+*Team members collaborated across different project activities.*
 
-| Task | Responsible Team Members |
-|---|---|
-| Data Cleaning & Transformation | Manar Nasr, Nourhan Mohamed, Ola Mohamed |
-| Data Preparation | Mohamed Yehia, Martin Milad |
-| Data Modeling | Shahd Mohammed |
-| Data Visualization | All |
+##  Instructor
 
----
-
-## (KPIs)
-
-The dashboard tracks the following key business KPIs:
-
-- Late Delivery Rate
-- Loss-Making Items
-- Profit Margin
-- Discount Performance
-- Canceled and Fraudulent Orders
-- Top Products Sales Contribution
-- Repeat Customer Rate
----
-## Instructor
 **Eng. Fatimah Ehab Farouk**
+
+## 🔗 Project Links
 
 ## Project Links
 
 - [Google Drive](https://drive.google.com/drive/folders/1TnydAgUrdRYruCsezCgereYtEzuWlOVl)
 - [Microsoft OneDrive](https://1drv.ms/f/c/FA7D10A77F2E4661/IgDDP0_1BLzRS7GsRIvDfCp7AeEQH6RhcG-0tK4i_BX5GOI?e=QPBwTy)
+
+---
+
+**Project Focus:** Supply Chain Analytics | Business Intelligence | Data-Driven Decision Making
 
