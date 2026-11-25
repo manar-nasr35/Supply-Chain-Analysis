@@ -1,0 +1,1078 @@
+
+/*---------------------------------------------------------------------------------------
+                        DataCO SUPPLY CHAIN DEPI GRADUATION PROJECT
+                           Database Modeling & Business Cases
+ ---------------------------------------------------------------------------------------*/
+
+
+/*--------DATABASE & SOURCE DATA VALIDATION --------*/
+
+CREATE TABLE STG_SUPPLY_CHAIN (
+    payment_type       VARCHAR(100),
+    days_real          INTEGER,
+    days_scheduled     INTEGER,
+    profit             NUMERIC(18,2),
+    net_sales          NUMERIC(18,2),
+    delivery_status    VARCHAR(100),
+    delivery_risk      VARCHAR(100),
+    category_id        INTEGER,
+    category_name      VARCHAR(255),
+    customer_city      VARCHAR(255),
+    customer_country   VARCHAR(255),
+    customer_id        INTEGER,
+    customer_segment   VARCHAR(100),
+    customer_state     VARCHAR(255),
+    department_id      INTEGER,
+    department_name    VARCHAR(255),
+    market             VARCHAR(100),
+    city               VARCHAR(255),
+    country            VARCHAR(255),
+    order_id           BIGINT,
+    discount_amount    NUMERIC(18,2),
+    discount_rate      NUMERIC(10,4),
+    item_id            BIGINT,
+    profit_ratio       NUMERIC(10,4),
+    quantity           INTEGER,
+    sales              NUMERIC(18,2),
+    region             VARCHAR(100),
+    state              VARCHAR(255),
+    order_status       VARCHAR(100),
+    product_name       VARCHAR(500),
+    product_price      NUMERIC(18,2),
+    product_status     INTEGER,
+    shipping_mode      VARCHAR(100),
+    order_date         DATE,
+    delay_days         INTEGER,
+    profit_status      VARCHAR(100)
+);
+
+
+SELECT current_database();
+
+SELECT COUNT(*) AS total_rows
+FROM public.stg_supply_chain;
+
+SELECT *
+FROM public.stg_supply_chain
+LIMIT 10;
+
+SELECT
+    COUNT(*) AS total_rows,
+    COUNT(DISTINCT item_id) AS total_items,
+    COUNT(DISTINCT order_id) AS total_orders,
+    COUNT(DISTINCT customer_id) AS total_customers,
+    COUNT(DISTINCT product_name) AS total_products,
+    MIN(order_date) AS first_order_date,
+    MAX(order_date) AS last_order_date,
+    COUNT(*) FILTER (WHERE order_date IS NULL) AS missing_dates
+FROM public.stg_supply_chain;
+
+--- Item ID Duplicate
+SELECT
+    item_id,
+    COUNT(*) AS duplicate_count
+FROM public.stg_supply_chain
+GROUP BY item_id
+HAVING COUNT(*) > 1
+ORDER BY duplicate_count DESC;
+
+--- Null Values
+
+SELECT
+    COUNT(*) FILTER (WHERE item_id IS NULL) AS missing_item_id,
+    COUNT(*) FILTER (WHERE order_id IS NULL) AS missing_order_id,
+    COUNT(*) FILTER (WHERE customer_id IS NULL) AS missing_customer_id,
+    COUNT(*) FILTER (WHERE product_name IS NULL) AS missing_product_name,
+    COUNT(*) FILTER (WHERE sales IS NULL) AS missing_sales,
+    COUNT(*) FILTER (WHERE profit IS NULL) AS missing_profit
+FROM public.stg_supply_chain;
+
+
+/*------------ SECTION 2: DATA CONSISTENCY CHECKS ----------*/
+
+--- Customer ID Distinct & Uniqe 
+SELECT
+    customer_id,
+    COUNT(DISTINCT ROW(
+        customer_segment,
+        customer_city,
+        customer_state,
+        customer_country
+    )) AS different_profiles
+FROM public.stg_supply_chain
+GROUP BY customer_id
+HAVING COUNT(DISTINCT ROW(
+    customer_segment,
+    customer_city,
+    customer_state,
+    customer_country
+)) > 1;
+
+----- Product Name
+SELECT
+    product_name,
+    COUNT(DISTINCT ROW(
+        product_price,
+        product_status,
+        category_id,
+        category_name,
+        department_id,
+        department_name
+    )) AS different_product_profiles
+FROM public.stg_supply_chain
+GROUP BY product_name
+HAVING COUNT(DISTINCT ROW(
+    product_price,
+    product_status,
+    category_id,
+    category_name,
+    department_id,
+    department_name
+)) > 1;
+
+--  Check Duplicated Order
+SELECT
+    order_id,
+    COUNT(DISTINCT ROW(
+        customer_id,
+        order_date,
+        order_status,
+        shipping_mode,
+        payment_type,
+        delivery_status,
+        delivery_risk,
+        days_real,
+        days_scheduled
+    )) AS different_order_profiles
+FROM public.stg_supply_chain
+GROUP BY order_id
+HAVING COUNT(DISTINCT ROW(
+    customer_id,
+    order_date,
+    order_status,
+    shipping_mode,
+    payment_type,
+    delivery_status,
+    delivery_risk,
+    days_real,
+    days_scheduled
+)) > 1;
+
+-- Check Duplicated Geo 
+SELECT
+    COUNT(*) FILTER (WHERE country IS NULL) AS missing_country,
+    COUNT(*) FILTER (WHERE market IS NULL) AS missing_market,
+    COUNT(*) FILTER (WHERE region IS NULL) AS missing_region,
+    COUNT(*) FILTER (WHERE city IS NULL) AS missing_city
+FROM public.stg_supply_chain;
+
+-- Discount Check 
+SELECT
+    MIN(discount_rate) AS min_discount_rate,
+    MAX(discount_rate) AS max_discount_rate,
+    MIN(discount_amount) AS min_discount_amount,
+    MAX(discount_amount) AS max_discount_amount
+FROM public.stg_supply_chain;
+
+-- Check Order Status
+SELECT
+    order_status,
+    COUNT(*) AS records_count
+FROM public.stg_supply_chain
+GROUP BY order_status
+ORDER BY records_count DESC;
+
+-- Delivery Check
+SELECT
+    delivery_status,
+    COUNT(*) AS records_count
+FROM public.stg_supply_chain
+GROUP BY delivery_status
+ORDER BY records_count DESC;
+
+
+/*---------------  CREATE DIMENSIONAL MODEL TABLES  ------------------*/
+
+-- Customer Dimension
+CREATE TABLE IF NOT EXISTS public.dm_customer (
+    customer_id BIGINT PRIMARY KEY,
+    customer_segment VARCHAR(100),
+    customer_city VARCHAR(150),
+    customer_state VARCHAR(150),
+    customer_country VARCHAR(150)
+);
+
+--  Product Dimension
+CREATE TABLE IF NOT EXISTS public.dm_product (
+    product_key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    product_name TEXT NOT NULL UNIQUE,
+    product_price NUMERIC(18,2),
+    product_status VARCHAR(100),
+    category_id BIGINT,
+    category_name VARCHAR(200),
+    department_id BIGINT,
+    department_name VARCHAR(200)
+);
+
+--  Date Dimension
+CREATE TABLE IF NOT EXISTS public.dm_date (
+    date_key INTEGER PRIMARY KEY,
+    full_date DATE UNIQUE NOT NULL,
+    year_number INTEGER,
+    quarter_number INTEGER,
+    month_number INTEGER,
+    month_name VARCHAR(20),
+    year_month VARCHAR(7),
+    day_number INTEGER,
+    day_name VARCHAR(20)
+);
+
+-- Geography Dimension
+CREATE TABLE IF NOT EXISTS public.dm_geography (
+    geography_key BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    city VARCHAR(150),
+    state VARCHAR(150),
+    country VARCHAR(150),
+    region VARCHAR(150),
+    market VARCHAR(150),
+    CONSTRAINT uq_dm_geography UNIQUE NULLS NOT DISTINCT
+        (city, state, country, region, market)
+);
+
+-- Fact Table
+CREATE TABLE IF NOT EXISTS public.fact_orderitems (
+    item_id BIGINT PRIMARY KEY,
+    order_id BIGINT NOT NULL,
+
+    customer_id BIGINT,
+    product_key BIGINT,
+    date_key INTEGER,
+    geography_key BIGINT,
+
+    payment_type VARCHAR(100),
+    shipping_mode VARCHAR(100),
+    order_status VARCHAR(100),
+    delivery_status VARCHAR(100),
+    delivery_risk VARCHAR(100),
+
+    days_real INTEGER,
+    days_scheduled INTEGER,
+    delay_days INTEGER,
+
+    quantity INTEGER,
+    sales NUMERIC(18,2),
+    net_sales NUMERIC(18,2),
+    discount_amount NUMERIC(18,2),
+    discount_rate NUMERIC(12,6),
+    profit NUMERIC(18,2),
+    profit_ratio NUMERIC(18,6),
+    profit_status VARCHAR(100),
+
+    CONSTRAINT fk_fact_customer
+        FOREIGN KEY (customer_id)
+        REFERENCES public.dm_customer(customer_id),
+
+    CONSTRAINT fk_fact_product
+        FOREIGN KEY (product_key)
+        REFERENCES public.dm_product(product_key),
+
+    CONSTRAINT fk_fact_date
+        FOREIGN KEY (date_key)
+        REFERENCES public.dm_date(date_key),
+
+    CONSTRAINT fk_fact_geography
+        FOREIGN KEY (geography_key)
+        REFERENCES public.dm_geography(geography_key)
+);
+
+
+/*--------------- LOAD DIMENSION TABLES --------------------*/
+
+-- Load Customer Dimension
+INSERT INTO public.dm_customer (
+    customer_id,
+    customer_segment,
+    customer_city,
+    customer_state,
+    customer_country
+)
+SELECT DISTINCT
+    customer_id,
+    customer_segment,
+    customer_city,
+    customer_state,
+    customer_country
+FROM public.stg_supply_chain
+WHERE customer_id IS NOT NULL
+ON CONFLICT (customer_id) DO NOTHING;
+
+-- Load Product Dimension
+INSERT INTO public.dm_product (
+    product_name,
+    product_price,
+    product_status,
+    category_id,
+    category_name,
+    department_id,
+    department_name
+)
+SELECT
+    product_name,
+    MIN(product_price),
+    MIN(product_status),
+    MIN(category_id),
+    MIN(category_name),
+    MIN(department_id),
+    MIN(department_name)
+FROM public.stg_supply_chain
+WHERE product_name IS NOT NULL
+GROUP BY product_name
+ON CONFLICT (product_name) DO NOTHING;
+
+-- Load Date Dimension
+INSERT INTO public.dm_date (
+    date_key,
+    full_date,
+    year_number,
+    quarter_number,
+    month_number,
+    month_name,
+    year_month,
+    day_number,
+    day_name
+)
+SELECT DISTINCT
+    TO_CHAR(order_date, 'YYYYMMDD')::INTEGER,
+    order_date,
+    EXTRACT(YEAR FROM order_date)::INTEGER,
+    EXTRACT(QUARTER FROM order_date)::INTEGER,
+    EXTRACT(MONTH FROM order_date)::INTEGER,
+    TO_CHAR(order_date, 'FMMonth'),
+    TO_CHAR(order_date, 'YYYY-MM'),
+    EXTRACT(DAY FROM order_date)::INTEGER,
+    TO_CHAR(order_date, 'FMDay')
+FROM public.stg_supply_chain
+WHERE order_date IS NOT NULL
+ON CONFLICT (date_key) DO NOTHING;
+
+-- Load Geography Dimension
+INSERT INTO public.dm_geography (
+    city,
+    state,
+    country,
+    region,
+    market
+)
+SELECT DISTINCT
+    city,
+    state,
+    country,
+    region,
+    market
+FROM public.stg_supply_chain
+ON CONFLICT DO NOTHING;
+
+
+/*--------------------- LOAD FACT TABLE -------------------------*/
+
+INSERT INTO public.fact_orderitems (
+    item_id,
+    order_id,
+    customer_id,
+    product_key,
+    date_key,
+    geography_key,
+    payment_type,
+    shipping_mode,
+    order_status,
+    delivery_status,
+    delivery_risk,
+    days_real,
+    days_scheduled,
+    delay_days,
+    quantity,
+    sales,
+    net_sales,
+    discount_amount,
+    discount_rate,
+    profit,
+    profit_ratio,
+    profit_status
+)
+SELECT
+    s.item_id,
+    s.order_id,
+    s.customer_id,
+    p.product_key,
+    TO_CHAR(s.order_date, 'YYYYMMDD')::INTEGER,
+    g.geography_key,
+    s.payment_type,
+    s.shipping_mode,
+    s.order_status,
+    s.delivery_status,
+    s.delivery_risk,
+    s.days_real,
+    s.days_scheduled,
+    s.delay_days,
+    s.quantity,
+    s.sales,
+    s.net_sales,
+    s.discount_amount,
+    s.discount_rate,
+    s.profit,
+    s.profit_ratio,
+    s.profit_status
+FROM public.stg_supply_chain s
+LEFT JOIN public.dm_product p
+    ON s.product_name = p.product_name
+LEFT JOIN public.dm_geography g
+    ON s.city IS NOT DISTINCT FROM g.city
+   AND s.state IS NOT DISTINCT FROM g.state
+   AND s.country IS NOT DISTINCT FROM g.country
+   AND s.region IS NOT DISTINCT FROM g.region
+   AND s.market IS NOT DISTINCT FROM g.market
+WHERE s.item_id IS NOT NULL
+  AND s.order_id IS NOT NULL
+ON CONFLICT (item_id) DO NOTHING;
+
+
+/*--------------------- CREATE INDEXES ---------------------*/
+
+CREATE INDEX IF NOT EXISTS idx_fact_order_id
+ON public.fact_orderitems(order_id);
+
+CREATE INDEX IF NOT EXISTS idx_fact_customer_id
+ON public.fact_orderitems(customer_id);
+
+CREATE INDEX IF NOT EXISTS idx_fact_product_key
+ON public.fact_orderitems(product_key);
+
+CREATE INDEX IF NOT EXISTS idx_fact_date_key
+ON public.fact_orderitems(date_key);
+
+CREATE INDEX IF NOT EXISTS idx_fact_geography_key
+ON public.fact_orderitems(geography_key);
+
+CREATE INDEX IF NOT EXISTS idx_fact_order_status
+ON public.fact_orderitems(order_status);
+
+CREATE INDEX IF NOT EXISTS idx_fact_delivery_status
+ON public.fact_orderitems(delivery_status);
+
+
+/*-----------  MODEL VALIDATION --------------*/
+
+-- Compare source and fact row counts
+SELECT
+    (SELECT COUNT(*) FROM public.stg_supply_chain) AS staging_rows,
+    (SELECT COUNT(*) FROM public.fact_orderitems) AS fact_rows;
+
+-- Compare distinct orders
+SELECT
+    (SELECT COUNT(DISTINCT order_id)
+     FROM public.stg_supply_chain) AS staging_orders,
+    (SELECT COUNT(DISTINCT order_id)
+     FROM public.fact_orderitems) AS fact_orders;
+
+-- Dimension row counts
+SELECT 'DM_CUSTOMER' AS table_name, COUNT(*) AS total_rows
+FROM public.dm_customer
+UNION ALL
+SELECT 'DM_PRODUCT', COUNT(*) FROM public.dm_product
+UNION ALL
+SELECT 'DM_DATE', COUNT(*) FROM public.dm_date
+UNION ALL
+SELECT 'DM_GEOGRAPHY', COUNT(*) FROM public.dm_geography
+UNION ALL
+SELECT 'FACT_ORDERITEMS', COUNT(*) FROM public.fact_orderitems;
+
+-- Check missing dimension keys in fact
+SELECT
+    COUNT(*) FILTER (WHERE customer_id IS NULL) AS missing_customer,
+    COUNT(*) FILTER (WHERE product_key IS NULL) AS missing_product,
+    COUNT(*) FILTER (WHERE date_key IS NULL) AS missing_date,
+    COUNT(*) FILTER (WHERE geography_key IS NULL) AS missing_geography
+FROM public.fact_orderitems;
+
+-- Check unmatched products from staging
+SELECT COUNT(*) AS unmatched_products
+FROM public.stg_supply_chain s
+LEFT JOIN public.dm_product p
+    ON s.product_name = p.product_name
+WHERE p.product_key IS NULL;
+
+-- Check unmatched customers
+SELECT COUNT(*) AS unmatched_customers
+FROM public.stg_supply_chain s
+LEFT JOIN public.dm_customer c
+    ON s.customer_id = c.customer_id
+WHERE c.customer_id IS NULL;
+
+
+/*-------------- CREATE ANALYTICAL VIEWS -----------------*/
+
+-- Flat view: one row per order item
+CREATE OR REPLACE VIEW public.vw_sales_flat AS
+SELECT
+    f.item_id,
+    f.order_id,
+
+    f.customer_id,
+    c.customer_segment,
+    c.customer_city,
+    c.customer_state,
+    c.customer_country,
+
+    f.product_key,
+    p.product_name,
+    p.product_price,
+    p.category_id,
+    p.category_name,
+    p.department_id,
+    p.department_name,
+
+    d.full_date AS order_date,
+    d.year_number,
+    d.quarter_number,
+    d.month_number,
+    d.month_name,
+    d.year_month,
+
+    g.city,
+    g.state,
+    g.country,
+    g.region,
+    g.market,
+
+    f.payment_type,
+    f.shipping_mode,
+    f.order_status,
+    f.delivery_status,
+    f.delivery_risk,
+
+    f.days_real,
+    f.days_scheduled,
+    f.delay_days,
+
+    f.quantity,
+    f.sales,
+    f.net_sales,
+    f.discount_amount,
+    f.discount_rate,
+    f.profit,
+    f.profit_ratio,
+    f.profit_status
+
+FROM public.fact_orderitems f
+LEFT JOIN public.dm_customer c
+    ON f.customer_id = c.customer_id
+LEFT JOIN public.dm_product p
+    ON f.product_key = p.product_key
+LEFT JOIN public.dm_date d
+    ON f.date_key = d.date_key
+LEFT JOIN public.dm_geography g
+    ON f.geography_key = g.geography_key;
+
+
+-- Order-level view: one row per order
+CREATE OR REPLACE VIEW public.vw_orders_flat AS
+SELECT
+    order_id,
+    MIN(customer_id) AS customer_id,
+    MIN(order_date) AS order_date,
+    MIN(year_number) AS year_number,
+    MIN(month_number) AS month_number,
+    MIN(year_month) AS year_month,
+    MIN(market) AS market,
+    MIN(country) AS country,
+    MIN(region) AS region,
+    MIN(shipping_mode) AS shipping_mode,
+    MIN(payment_type) AS payment_type,
+    MIN(order_status) AS order_status,
+    MIN(delivery_status) AS delivery_status,
+    MIN(delivery_risk) AS delivery_risk,
+    MIN(days_real) AS days_real,
+    MIN(days_scheduled) AS days_scheduled,
+    MIN(delay_days) AS delay_days,
+    COUNT(*) AS item_lines,
+    SUM(quantity) AS total_quantity,
+    SUM(sales) AS total_sales,
+    SUM(net_sales) AS total_net_sales,
+    SUM(discount_amount) AS total_discount,
+    SUM(profit) AS total_profit
+FROM public.vw_sales_flat
+GROUP BY order_id;
+
+
+-- KPI Summary View
+CREATE OR REPLACE VIEW public.vw_kpi_summary AS
+SELECT
+    COUNT(DISTINCT order_id) AS total_orders,
+    COUNT(DISTINCT customer_id) AS total_customers,
+    COUNT(DISTINCT product_key) AS total_products,
+    SUM(quantity) AS total_quantity,
+    SUM(sales) AS total_sales,
+    SUM(net_sales) AS total_net_sales,
+    SUM(discount_amount) AS total_discount,
+    SUM(profit) AS total_profit,
+    AVG(profit_ratio) AS average_profit_ratio
+FROM public.vw_sales_flat;
+
+
+/*------------ BUSINESS CASE 1 - SHIPPING DELAYS -------------*/
+
+-- shipping performance
+SELECT
+    delivery_status,
+    COUNT(DISTINCT order_id) AS total_orders,
+    ROUND(
+        COUNT(DISTINCT order_id) * 100.0 /
+        NULLIF((SELECT COUNT(DISTINCT order_id)
+                FROM public.vw_orders_flat), 0), 2
+    ) AS percentage
+FROM public.vw_orders_flat
+GROUP BY delivery_status
+ORDER BY total_orders DESC;
+
+-- Real days vs scheduled days by shipping mode
+SELECT
+    shipping_mode,
+    COUNT(DISTINCT order_id) AS total_orders,
+    ROUND(AVG(days_scheduled), 2) AS avg_scheduled_days,
+    ROUND(AVG(days_real), 2) AS avg_actual_days,
+    ROUND(AVG(delay_days), 2) AS avg_delay_days
+FROM public.vw_orders_flat
+GROUP BY shipping_mode
+ORDER BY avg_delay_days DESC;
+
+-- Late & on-time orders by market
+SELECT
+    market,
+    COUNT(DISTINCT order_id) AS total_orders,
+    COUNT(DISTINCT order_id) FILTER (
+        WHERE delivery_status ILIKE '%late%'
+    ) AS late_orders,
+    COUNT(DISTINCT order_id) FILTER (
+        WHERE delivery_status ILIKE '%on time%'
+    ) AS on_time_orders,
+    COUNT(DISTINCT order_id) FILTER (
+        WHERE delivery_status ILIKE '%advance%'
+    ) AS advance_orders
+FROM public.vw_orders_flat
+GROUP BY market
+ORDER BY late_orders DESC;
+
+-- Monthly shipping delay trend
+SELECT
+    year_month,
+    COUNT(DISTINCT order_id) AS total_orders,
+    COUNT(DISTINCT order_id) FILTER (
+        WHERE delivery_status ILIKE '%late%'
+    ) AS late_orders,
+    ROUND(AVG(delay_days), 2) AS avg_delay_days
+FROM public.vw_orders_flat
+GROUP BY year_month
+ORDER BY year_month;
+
+
+/*------------ BUSINESS CASE 2 - LOSS-MAKING PRODUCTS --------------*/
+
+-- Profitability by product
+SELECT
+    product_name,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit,
+    SUM(quantity) AS total_quantity,
+    CASE
+        WHEN SUM(profit) < 0 THEN 'Loss Making'
+        WHEN SUM(profit) > 0 THEN 'Profitable'
+        ELSE 'Break Even'
+    END AS profitability_status
+FROM public.vw_sales_flat
+GROUP BY product_name
+ORDER BY total_profit ASC;
+
+-- Profitability by department
+SELECT
+    department_name,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit,
+    SUM(quantity) AS total_quantity
+FROM public.vw_sales_flat
+GROUP BY department_name
+ORDER BY total_profit ASC;
+
+-- Profitability by category
+SELECT
+    category_name,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit,
+    CASE
+        WHEN SUM(profit) < 0 THEN 'Loss Making'
+        ELSE 'Profitable'
+    END AS profitability_status
+FROM public.vw_sales_flat
+GROUP BY category_name
+ORDER BY total_profit ASC;
+
+-- Losses by market
+SELECT
+    market,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit,
+    COUNT(DISTINCT order_id) AS total_orders
+FROM public.vw_sales_flat
+GROUP BY market
+ORDER BY total_profit ASC;
+
+
+/*---------- BUSINESS CASE 3 - DISCOUNT ANALYSIS --------------*/
+
+-- Discount rate distribution
+SELECT
+    MIN(discount_rate) AS minimum_discount,
+    MAX(discount_rate) AS maximum_discount,
+    AVG(discount_rate) AS average_discount
+FROM public.vw_sales_flat;
+
+-- Classify orders by discount percentage
+SELECT
+    CASE
+        WHEN discount_rate < 0.05 THEN '0% - 5%'
+        WHEN discount_rate < 0.10 THEN '5% - 10%'
+        WHEN discount_rate < 0.20 THEN '10% - 20%'
+        WHEN discount_rate < 0.30 THEN '20% - 30%'
+        ELSE '30% and Above'
+    END AS discount_band,
+    COUNT(DISTINCT order_id) AS total_orders,
+    SUM(quantity) AS total_quantity,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit,
+    AVG(discount_rate) AS average_discount_rate
+FROM public.vw_sales_flat
+GROUP BY discount_band
+ORDER BY MIN(discount_rate);
+
+-- Profit impact by discount band
+SELECT
+    CASE
+        WHEN discount_rate < 0.05 THEN '0% - 5%'
+        WHEN discount_rate < 0.10 THEN '5% - 10%'
+        WHEN discount_rate < 0.20 THEN '10% - 20%'
+        WHEN discount_rate < 0.30 THEN '20% - 30%'
+        ELSE '30% and Above'
+    END AS discount_band,
+    SUM(sales) AS total_sales,
+    SUM(discount_amount) AS total_discount,
+    SUM(profit) AS total_profit,
+    ROUND(AVG(profit_ratio), 4) AS average_profit_ratio
+FROM public.vw_sales_flat
+GROUP BY discount_band
+ORDER BY MIN(discount_rate);
+
+-- Quantity sold by discount band
+SELECT
+    CASE
+        WHEN discount_rate < 0.05 THEN '0% - 5%'
+        WHEN discount_rate < 0.10 THEN '5% - 10%'
+        WHEN discount_rate < 0.20 THEN '10% - 20%'
+        WHEN discount_rate < 0.30 THEN '20% - 30%'
+        ELSE '30% and Above'
+    END AS discount_band,
+    SUM(quantity) AS units_sold
+FROM public.vw_sales_flat
+GROUP BY discount_band
+ORDER BY MIN(discount_rate);
+
+
+/*-------------- BUSINESS CASE 4 - FRAUD & CANCELLATIONS --------------*/
+
+-- Inspect order status values
+SELECT
+    order_status,
+    COUNT(DISTINCT order_id) AS total_orders
+FROM public.vw_orders_flat
+GROUP BY order_status
+ORDER BY total_orders DESC;
+
+-- Search for cancellation-related statuses
+SELECT
+    order_status,
+    COUNT(DISTINCT order_id) AS total_orders
+FROM public.vw_orders_flat
+WHERE order_status ILIKE '%cancel%'
+GROUP BY order_status;
+
+-- Search for fraud-related statuses
+SELECT
+    order_status,
+    COUNT(DISTINCT order_id) AS total_orders
+FROM public.vw_orders_flat
+WHERE order_status ILIKE '%fraud%'
+GROUP BY order_status;
+
+-- Cancellations and suspected fraud by market
+SELECT
+    market,
+    COUNT(DISTINCT order_id) AS total_orders,
+    COUNT(DISTINCT order_id) FILTER (
+        WHERE order_status ILIKE '%cancel%'
+    ) AS cancelled_orders,
+    COUNT(DISTINCT order_id) FILTER (
+        WHERE order_status ILIKE '%fraud%'
+    ) AS fraud_flagged_orders
+FROM public.vw_orders_flat
+GROUP BY market
+ORDER BY fraud_flagged_orders DESC;
+
+-- Cancelled and fraud-flagged orders details
+SELECT
+    order_id,
+    customer_id,
+    order_date,
+    market,
+    country,
+    order_status,
+    total_sales,
+    total_profit
+FROM public.vw_orders_flat
+WHERE order_status ILIKE '%cancel%'
+   OR order_status ILIKE '%fraud%'
+ORDER BY order_date;
+
+
+/*---------BUSINESS CASE 5 - PRODUCT & CATEGORY CONCENTRATION -------*/
+
+-- Sales contribution by product
+SELECT
+    product_name,
+    SUM(sales) AS product_sales,
+    ROUND(
+        SUM(sales) * 100.0 /
+        NULLIF((SELECT SUM(sales)
+                FROM public.vw_sales_flat), 0), 2
+    ) AS sales_percentage
+FROM public.vw_sales_flat
+GROUP BY product_name
+ORDER BY product_sales DESC;
+
+-- Sales contribution by category
+SELECT
+    category_name,
+    SUM(sales) AS category_sales,
+    SUM(quantity) AS total_quantity,
+    ROUND(
+        SUM(sales) * 100.0 /
+        NULLIF((SELECT SUM(sales)
+                FROM public.vw_sales_flat), 0), 2
+    ) AS sales_percentage
+FROM public.vw_sales_flat
+GROUP BY category_name
+ORDER BY category_sales DESC;
+
+-- Product ranking by sales
+SELECT
+    product_name,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit,
+    DENSE_RANK() OVER (ORDER BY SUM(sales) DESC) AS sales_rank
+FROM public.vw_sales_flat
+GROUP BY product_name
+ORDER BY sales_rank;
+
+-- Pareto analysis: cumulative product sales contribution
+WITH product_sales AS (
+    SELECT
+        product_name,
+        SUM(sales) AS total_sales
+    FROM public.vw_sales_flat
+    GROUP BY product_name
+),
+ranked_products AS (
+    SELECT
+        product_name,
+        total_sales,
+        SUM(total_sales) OVER (
+            ORDER BY total_sales DESC
+        ) AS cumulative_sales,
+        SUM(total_sales) OVER () AS overall_sales
+    FROM product_sales
+)
+SELECT
+    product_name,
+    total_sales,
+    ROUND(
+        cumulative_sales * 100.0 /
+        NULLIF(overall_sales, 0), 2
+    ) AS cumulative_sales_percentage
+FROM ranked_products
+ORDER BY total_sales DESC;
+
+
+/*-------------  BUSINESS CASE 6 - CUSTOMER LOYALTY ----------*/
+
+--Customer purchase frequency
+SELECT
+    customer_id,
+    COUNT(DISTINCT order_id) AS total_orders,
+    SUM(total_sales) AS total_sales,
+    SUM(total_profit) AS total_profit
+FROM public.vw_orders_flat
+GROUP BY customer_id
+ORDER BY total_orders DESC;
+
+-- Customer loyalty classification
+WITH customer_orders AS (
+    SELECT
+        customer_id,
+        COUNT(DISTINCT order_id) AS total_orders,
+        SUM(total_sales) AS total_sales,
+        SUM(total_profit) AS total_profit
+    FROM public.vw_orders_flat
+    GROUP BY customer_id
+)
+SELECT
+    customer_id,
+    total_orders,
+    total_sales,
+    total_profit,
+    CASE
+        WHEN total_orders >= 10 THEN 'High Loyalty'
+        WHEN total_orders >= 5 THEN 'Medium Loyalty'
+        ELSE 'Low Loyalty'
+    END AS loyalty_segment
+FROM customer_orders
+ORDER BY total_orders DESC;
+
+-- Customer segment performance
+SELECT
+    customer_segment,
+    COUNT(DISTINCT customer_id) AS total_customers,
+    COUNT(DISTINCT order_id) AS total_orders,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit
+FROM public.vw_sales_flat
+GROUP BY customer_segment
+ORDER BY total_sales DESC;
+
+-- Top 20 customers by sales
+SELECT
+    customer_id,
+    COUNT(DISTINCT order_id) AS total_orders,
+    SUM(total_sales) AS total_sales,
+    SUM(total_profit) AS total_profit
+FROM public.vw_orders_flat
+GROUP BY customer_id
+ORDER BY total_sales DESC
+LIMIT 20;
+
+
+/*---------------- BUSINESS CASE 7 - MARKET ANALYSIS -------------*/
+
+-- Sales and profit by market
+SELECT
+    market,
+    COUNT(DISTINCT order_id) AS total_orders,
+    SUM(sales) AS total_sales,
+    SUM(net_sales) AS total_net_sales,
+    SUM(profit) AS total_profit,
+    SUM(quantity) AS total_quantity
+FROM public.vw_sales_flat
+GROUP BY market
+ORDER BY total_sales DESC;
+
+-- Country performance
+SELECT
+    market,
+    country,
+    COUNT(DISTINCT order_id) AS total_orders,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit
+FROM public.vw_sales_flat
+GROUP BY market, country
+ORDER BY total_sales DESC;
+
+-- Regional performance
+SELECT
+    region,
+    COUNT(DISTINCT order_id) AS total_orders,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit
+FROM public.vw_sales_flat
+GROUP BY region
+ORDER BY total_sales DESC;
+
+-- Market profitability
+SELECT
+    market,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit,
+    ROUND(
+        SUM(profit) * 100.0 /
+        NULLIF(SUM(sales), 0), 2
+    ) AS profit_margin_percentage
+FROM public.vw_sales_flat
+GROUP BY market
+ORDER BY profit_margin_percentage DESC;
+
+
+
+
+
+/*--------------- FINAL PROJECT KPIs ------------*/
+
+-- project KPIs
+SELECT *
+FROM public.vw_kpi_summary;
+
+-- Orders, sales and profit by year
+SELECT
+    year_number,
+    COUNT(DISTINCT order_id) AS total_orders,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit,
+    SUM(quantity) AS total_quantity
+FROM public.vw_sales_flat
+GROUP BY year_number
+ORDER BY year_number;
+
+-- Monthly sales and profit trend
+SELECT
+    year_month,
+    COUNT(DISTINCT order_id) AS total_orders,
+    SUM(sales) AS total_sales,
+    SUM(profit) AS total_profit
+FROM public.vw_sales_flat
+GROUP BY year_month
+ORDER BY year_month;
+
+
+/*-------------- FINAL DATABASE OBJECTS CHECK -------------*/
+
+-- List final model tables
+SELECT
+    table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
+  AND table_type = 'BASE TABLE'
+  AND table_name IN (
+      'dm_customer',
+      'dm_product',
+      'dm_date',
+      'dm_geography',
+      'fact_orderitems',
+      'stg_supply_chain'
+  )
+ORDER BY table_name;
+
+-- List created analytical views
+SELECT
+    table_name
+FROM information_schema.views
+WHERE table_schema = 'public'
+  AND table_name IN (
+      'vw_sales_flat',
+      'vw_orders_flat',
+      'vw_kpi_summary'
+  )
+ORDER BY table_name;
